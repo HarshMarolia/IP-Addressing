@@ -1,0 +1,241 @@
+// ----------------------- Harsh Marolia ----------------------- //
+
+#include <bits/stdc++.h>
+using namespace std;
+
+// Function to convert binary to decimal
+int btod(string s)
+{
+    int ip = 0, base = 128;
+    for (int i = 0; i < 8; i++)
+    {
+        if (s[i] == '1')
+        {
+            ip = ip + base;
+        }
+        base = base / 2;
+    }
+    return ip;
+}
+
+// Function to find out Class of IP Address
+char ip_class(int ip)
+{
+    char c;
+    if (ip >= 0 && ip <= 127)
+    {
+        c = 'A';
+    }
+    else if (ip >= 128 && ip <= 191)
+    {
+        c = 'B';
+    }
+    else if (ip >= 192 && ip <= 223)
+    {
+        c = 'C';
+    }
+    else if (ip >= 224 && ip <= 239)
+    {
+        c = 'D';
+    }
+    else if (ip >= 239 && ip <= 255)
+    {
+        c = 'E';
+    }
+    return c;
+}
+
+bool validation(int n)
+{
+    if (n >= 0 && n <= 255)
+    {
+        return true;
+    }
+    return false;
+}
+
+int main()
+{
+    string s, s1 = "00000000000000000000000000000000", s2 = "11111111111111111111111111111111";
+    cout << "Enter IP Address: ";
+    cin >> s;
+    bool nbit = false;
+    int ip[5] = {0}, pos[4], k = 0, dots = 0;
+    for (int i = 0; i < s.length(); i++)
+    {
+        if (s[i] == '/')
+        {
+            nbit = true;
+        }
+        if (s[i] == '.')
+        {
+            dots++;
+        }
+        if (s[i] == '.' || s[i] == '/')
+        {
+            pos[k] = i;
+            k++;
+        }
+    }
+    if (dots != 3)
+    {
+        cout << "Invalid IP Address!";
+        return 0;
+    }
+
+    ip[0] = stoi(s.substr(0, pos[0]));
+    ip[1] = stoi(s.substr(pos[0] + 1, pos[1]));
+    ip[2] = stoi(s.substr(pos[1] + 1, pos[2]));
+    ip[3] = stoi(s.substr(pos[2] + 1, pos[3]));
+
+    // Checking if the IP Address entered is Valid or not
+    if (validation(ip[0]) && validation(ip[1]) && validation(ip[2]) && validation(ip[3]))
+    {
+        char ch = ip_class(ip[0]); // Finding the class of IP Address
+        if (!nbit)
+        {
+            if (ch == 'A')
+            {
+                ip[4] = 8;
+            }
+            else if (ch == 'B')
+            {
+                ip[4] = 16;
+            }
+            else if (ch == 'C')
+            {
+                ip[4] = 24;
+            }
+            else
+            {
+                ip[4] = 32;
+            }
+        }
+        else
+        {
+            ip[4] = stoi(s.substr(pos[3] + 1, s.length()));
+        }
+        for (int i = 0; i < ip[4]; i++)
+            s1[i] = '1';
+
+        for (int i = 0; i < ip[4]; i++)
+            s2[i] = '0';
+
+        // Class of IP Address
+        cout << "Class of IP Address: " << ch << "\n";
+        int mask[4];
+
+        // Subnet mask
+        // Prefix bits = 1 and suffix bits = 0
+        cout << "Subnet mask: ";
+        for (int i = 0; i < 32; i += 8)
+        {
+            mask[i / 8] = btod(s1.substr(i, i + 8));
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            if (i != 3)
+            {
+                cout << mask[i] << ".";
+            }
+            else
+            {
+                cout << mask[i] << "\n";
+            }
+        }
+
+        // Subnetwork Address or Network Address
+        // Write prefix as it is and suffix bits to 0
+        cout << "Subnetwork Address: ";
+        for (int i = 0; i < 4; i++)
+        {
+            if (i != 3)
+            {
+                cout << (ip[i] & mask[i]) << ".";
+            }
+            else
+            {
+                cout << (ip[i] & mask[i]) << "\n";
+            }
+        }
+
+        // Subnet Size or Total Number of host addresses
+        long long int ans1 = (1 << (32 - ip[4]));
+        cout << "Subnet size: " << ans1 << "\n";
+
+        // Valid hosts per Network
+        cout << "Valid hosts per Network: " << ans1 - 2 << "\n";
+
+        // Number of subnets
+        if (ch == 'A')
+        {
+            ip[4] -= 8;
+        }
+        else if (ch == 'B')
+        {
+            ip[4] -= 16;
+        }
+        else if (ch == 'C')
+        {
+            ip[4] -= 24;
+        }
+        else
+        {
+            ip[4] -= 32;
+        }
+        long long int ans2 = (1 << ip[4]);
+        cout << "Number of subnets: " << ans2 << "\n";
+        int count1 = 0, count2 = 0, count3 = 0;
+        for (int ii = 1; ii <= ans2; ii++)
+        {
+            cout << "\nSubnet " << ii << ": ";
+            for (int i = 0; i < 4; i++)
+            {
+                if (i == 0)
+                {
+                    cout << (ip[i] & mask[i]) << ".";
+                }
+                if (i == 1)
+                {
+                    cout << (ip[i] & mask[i]) + count1 << ".";
+                }
+                if (i == 2)
+                {
+                    cout << (ip[i] & mask[i]) + count2 << ".";
+                }
+                if (i == 3)
+                {
+                    cout << (ip[i] & mask[i]) + count3 << "\n";
+                }
+            }
+            for (int jj = 0; jj < ans1; jj++)
+            {
+                count3++;
+                if (((ip[3] & mask[3]) + count3) >= 256)
+                {
+                    count3 = 0;
+                    count2++;
+                }
+                if (((ip[2] & mask[2]) + count2) >= 256)
+                {
+                    count2 = 0;
+                    count1++;
+                    if (ch == 'B')
+                    {
+                        return 0;
+                    }
+                }
+                if (((ip[1] & mask[1]) + count1) >= 256)
+                {
+                    return 0;
+                }
+            }
+        }
+    }
+    else
+    {
+        cout << "Invalid IP Address!" << endl;
+    }
+
+    return 0;
+}
