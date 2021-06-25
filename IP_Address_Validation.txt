@@ -1,0 +1,98 @@
+// ----------------------- Harsh Marolia ----------------------- //
+
+#include <bits/stdc++.h>
+using namespace std;
+
+bool validation2(string s)
+{
+    int l = s.length();
+    string ip[4];
+    int pos[3] = {0}, k = 0;
+    for (int i = 0; i < l; i++)
+    {
+        if (s[i] == '.')
+        {
+            pos[k] = i;
+            k++;
+        }
+    }
+    ip[0] = s.substr(0, pos[0] - 0);
+    ip[1] = s.substr(pos[0] + 1, pos[1] - pos[0] - 1);
+    ip[2] = s.substr(pos[1] + 1, pos[2] - pos[1] - 1);
+    ip[3] = s.substr(pos[2] + 1, l - pos[2] - 1);
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (ip[i].length() > 3 || stoi(ip[i]) < 0 || stoi(ip[i]) > 255)
+            return false;
+
+        if (ip[i].length() > 1 && stoi(ip[i]) == 0)
+            return false;
+
+        if (ip[i].length() > 1 && stoi(ip[i]) != 0 && ip[i][0] == '0')
+            return false;
+    }
+    return true;
+}
+
+bool validation(int n)
+{
+    if (n > 12 || n < 4)
+    {
+        cout << "Invalid IP Address!";
+        return false;
+    }
+    return true;
+}
+
+void convertToIP(string s)
+{
+    cout<<"Possible IP Addresses:\n";
+    int l = s.length();
+    if (!validation(l))
+    {
+        return;
+    }
+    string str = s;
+    int i, j, k;
+    bool flag = false;
+    for (i = 1; i < l - 2; i++)
+    {
+        for (j = i + 1; j < l - 1; j++)
+        {
+            for (k = j + 1; k < l; k++)
+            {
+                str = str.substr(0, k) + "." + str.substr(k, l - k + 2);
+                str = str.substr(0, j) + "." + str.substr(j, l - j + 3);
+                str = str.substr(0, i) + "." + str.substr(i, l - i + 4);
+
+                if (validation2(str))
+                {
+                    cout << str << '\n';
+                    flag = true;
+                }
+                str = s;
+            }
+        }
+    }
+    if(!flag)
+    cout<<"No valid IP Address possible!";
+}
+
+int main()
+{
+    int t;
+    cout<<"How many strings you want to check: ";
+    cin >> t;
+    while (t--)
+    {
+        string s;
+        cout<<"Enter the string: ";
+        cin >> s;
+        convertToIP(s);
+    }
+    // string A = "25525511135";
+    // string B = "25505011535";
+
+    return 0;
+}
